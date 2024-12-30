@@ -1,91 +1,40 @@
 package main
 
 import (
-	"encoding/json"
+	"errors"
 	"fmt"
-	"io"
-	"net/http"
 )
 
-const POKEAPIURL = "https://pokeapi.co/api/v2/location-area/?offset=20&limit=20"
-
-type Config struct {
-	Count    int     `json:"count"`
-	Next     string  `json:"next"`
-	Previous *string `json:"previous"`
-	Results  []struct {
-		Name string `json:"name"`
-		URL  string `json:"url"`
-	} `json:"results"`
-}
-
-func CommandMap(conf *Config) error {
-	postUrl := "https://pokeapi.co/api/v2/location-area/?offset=0&limit=20"
-
-	if len(conf.Next) != 0 {
-		postUrl = conf.Next
-	}
-
-	req, err := http.NewRequest("GET", postUrl, nil)
+func commandMapf(cfg *config) error {
+	locationsResp, err := cfg.pokeapiClient.ListLocations(cfg.nextLocationsURL)
 	if err != nil {
-		return fmt.Errorf("could not create request:%v", err)
+		return err
 	}
 
-	client := &http.Client{}
-	res, err := client.Do(req)
-	if err != nil {
-		return fmt.Errorf("could not get response:%v", err)
+	cfg.nextLocationsURL = &locationsResp.Next
+	cfg.prevLocationsURL = locationsResp.Previous
+
+	for _, loc := range locationsResp.Results {
+		fmt.Println(loc.Name)
 	}
-
-	defer res.Body.Close()
-
-	data, err := io.ReadAll(res.Body)
-	if err != nil {
-	}
-
-	if err := json.Unmarshal(data, conf); err != nil {
-		return fmt.Errorf("could not marshall data into config:%v", err)
-	}
-
-	for _, area := range conf.Results {
-		fmt.Println(area.Name)
-	}
-
 	return nil
 }
 
-func commandMapb(conf *Config) error {
-	postUrl := "https://pokeapi.co/api/v2/location-area/?offset=0&limit=20"
-
-	if conf.Previous != nil {
-		postUrl = *conf.Previous
-		fmt.Println("get people here" + postUrl)
+func commandMapb(cfg *config) error {
+	if cfg.prevLocationsURL == nil {
+		return errors.New("you're on the first page")
 	}
 
-	req, err := http.NewRequest("GET", postUrl, nil)
+	locationResp, err := cfg.pokeapiClient.ListLocations(cfg.prevLocationsURL)
 	if err != nil {
-		return fmt.Errorf("could not create request:%v", err)
+		return err
 	}
 
-	client := &http.Client{}
-	res, err := client.Do(req)
-	if err != nil {
-		return fmt.Errorf("could not get response:%v", err)
+	cfg.nextLocationsURL = &locationResp.Next
+	cfg.prevLocationsURL = locationResp.Previous
+
+	for _, loc := range locationResp.Results {
+		fmt.Println(loc.Name)
 	}
-
-	defer res.Body.Close()
-
-	data, err := io.ReadAll(res.Body)
-	if err != nil {
-	}
-
-	if err := json.Unmarshal(data, conf); err != nil {
-		return fmt.Errorf("could not marshall data into config:%v", err)
-	}
-
-	for _, area := range conf.Results {
-		fmt.Println(area.Name)
-	}
-
 	return nil
 }

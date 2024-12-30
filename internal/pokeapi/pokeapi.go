@@ -1,5 +1,5 @@
 package pokeapi
 
 const (
-	baseUrl = "There are the only people here"
+	baseURL = "https://pokeapi.co/api/v2"
 )
