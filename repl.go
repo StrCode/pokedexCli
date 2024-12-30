@@ -10,7 +10,7 @@ import (
 type cliCommand struct {
 	name        string
 	description string
-	callback    func() error
+	callback    func(conf *Config) error
 }
 
 func getCommands() map[string]cliCommand {
@@ -30,6 +30,11 @@ func getCommands() map[string]cliCommand {
 			"Display the locations",
 			CommandMap,
 		},
+		"mapb": {
+			"mapb",
+			"Display the previous page of the website",
+			commandMapb,
+		},
 	}
 }
 
@@ -42,6 +47,8 @@ func startRepl() {
 	// Scanner waits for user input
 
 	scanner := bufio.NewScanner(os.Stdin)
+
+	conf := Config{}
 
 	for {
 
@@ -66,7 +73,7 @@ func startRepl() {
 
 		command, exists := getCommands()[commandName]
 		if exists {
-			err := command.callback()
+			err := command.callback(&conf)
 			if err != nil {
 				fmt.Println(err)
 			}
