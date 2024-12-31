@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func (c *Client) GetPokemanLists(locationName string) (Location, error) {
+func (c *Client) GetLocation(locationName string) (Location, error) {
 	url := baseURL + "/location-area/" + locationName
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {

@@ -10,7 +10,7 @@ func commandExplore(cfg *config, args ...string) error {
 		return errors.New("you must provide a location name")
 	}
 
-	data, err := cfg.pokeapiClient.GetPokemanLists(args[0])
+	data, err := cfg.pokeapiClient.GetLocation(args[0])
 	if err != nil {
 		return nil
 	}
